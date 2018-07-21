@@ -1,4 +1,4 @@
 *.h linguist-language=C
-*duktape.c export-ignore
-*duktape.h export-ignore
-*duk_config.h export-ignore
+/src/duktape.c export-ignore
+/include/duktape.h export-ignore
+/include/duk_config.h export-ignore
