@@ -3,42 +3,41 @@
 char *resolve_path(const char *path) { //restrict users into the /computer/ folder
 	char *new_memory;
 	char *end;
-	const char *current;
 	
 	if(path[0] == '/') {
 		new_memory = realloc(CURRENT_PATH, BASE_PATH_SIZE + strlen(path) +1);
 		end = new_memory + BASE_PATH_SIZE;
-		current = path+1;
 	} else {
 		new_memory = realloc(CURRENT_PATH, CURRENT_PATH_SIZE + strlen(path) +1);
 		end = new_memory + CURRENT_PATH_SIZE;
 		while(*end != '/') end--; //removes file from path
 		end++;
-		current = path;
 	}
 	
 	if(new_memory == NULL) return NULL; //failed to realloc
 	CURRENT_PATH = new_memory;
 	
-	while(*current == '/') current++; //remove slashes at start
-	for(; *current; current++) {
-		if(*current == '.') {
-			if(*(current+1) == '/') { // = "./"
-				current++;
-				continue;
-			} else if(*(current+1) == '.' && *(current+2) == '/') { // this is the "../" case
-				current += 2;
-				continue;
-			}
-		} else if(*current == '/' && *(current+1) == '/') {
-			continue;
-		}
-		*end++ = *current;
+	//backup current path
+	char CURRENT_PATH_BACKUP[CURRENT_PATH_SIZE+1];
+	size_t CURRENT_PATH_BACKUP_SIZE = CURRENT_PATH_SIZE+1;
+	memcpy(CURRENT_PATH_BACKUP, CURRENT_PATH, CURRENT_PATH_BACKUP_SIZE);
+	
+	memcpy(end, path, strlen(path)+1); //add new path to current one
+	
+	char buffer[MAX_PATH];
+	realpath(CURRENT_PATH, buffer); //convert to real path with no ".."
+	
+	if(strncmp(buffer, CURRENT_PATH, BASE_PATH_SIZE) == 0) { //if the base path is disturbed, then use the backup
+		CURRENT_PATH_SIZE = strlen(buffer);
+		memcpy(CURRENT_PATH, buffer, CURRENT_PATH_SIZE+1);
+	} else {
+		memcpy(CURRENT_PATH, CURRENT_PATH_BACKUP, CURRENT_PATH_BACKUP_SIZE);
+		CURRENT_PATH_SIZE = CURRENT_PATH_BACKUP_SIZE;
 	}
-	*end = '\0';
+	
 	//puts(CURRENT_PATH);
-	CURRENT_PATH = realloc(CURRENT_PATH, sizeof(char) * (end - CURRENT_PATH )); //shrink to size
-	CURRENT_PATH_SIZE = strlen(CURRENT_PATH);
+	
+	CURRENT_PATH = realloc(CURRENT_PATH, CURRENT_PATH_SIZE+1); //shrink to size
 	return CURRENT_PATH;
 }
 

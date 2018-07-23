@@ -3,6 +3,8 @@
 
 #include <unistd.h>
 #include <dirent.h> //listing directory
+#include <stdlib.h>
+#include <limits.h>
 
 #include "duktape.h"
 
@@ -20,5 +22,11 @@ duk_ret_t native_listdir(duk_context *);
 duk_ret_t native_readfile(duk_context *);
 duk_ret_t native_stdin(duk_context *);
 duk_ret_t native_chdir(duk_context *);
+
+//windows.c
+#ifdef WIN32
+#define MAX_PATH _MAX_PATH
+char *realpath(const char *restrict, char *restrict);
+#endif
 
 #endif
