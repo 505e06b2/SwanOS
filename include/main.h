@@ -22,6 +22,7 @@ duk_ret_t native_listdir(duk_context *);
 duk_ret_t native_readfile(duk_context *);
 duk_ret_t native_stdin(duk_context *);
 duk_ret_t native_chdir(duk_context *);
+duk_ret_t native_runfile(duk_context *);
 
 //windows.c
 #ifdef WIN32

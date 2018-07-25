@@ -64,23 +64,33 @@ int main() {
 	}
 	
 	duk_context *ctx = duk_create_heap_default();
-
+	
+	//Create object
 	duk_idx_t os_object = duk_push_object(ctx);
+	
 	duk_push_c_function(ctx, native_puts, DUK_VARARGS);
 	duk_put_prop_string(ctx, os_object, "print"); //print: native_puts;
+	
+	duk_push_c_function(ctx, native_runfile, DUK_VARARGS);
+	duk_put_prop_string(ctx, os_object, "run"); //run: native_runfile;
+	
 	duk_push_c_function(ctx, native_readfile, DUK_VARARGS);
 	duk_put_prop_string(ctx, os_object, "read"); //read: native_readfile;
+	
 	duk_push_c_function(ctx, native_stdin, DUK_VARARGS);
 	duk_put_prop_string(ctx, os_object, "stdin"); //stdin: native_stdin;
+	
 	duk_push_c_function(ctx, native_chdir, DUK_VARARGS);
 	duk_put_prop_string(ctx, os_object, "chdir"); //chdir: native_chdir;
+	
 	duk_push_c_function(ctx, native_listdir, DUK_VARARGS);
 	duk_put_prop_string(ctx, os_object, "list"); //list: native_listdir;
+	
 	duk_put_global_string(ctx, "os"); //name the object: `os = {}`
 	
-	if (duk_peval_string(ctx, "eval(os.read('startup.js'))") != 0) {
-		printf("Loading startup.js Failed: %s\n", duk_safe_to_string(ctx, -1));
-	}
+	//Run script
+	duk_peval_string(ctx, "os.run('/startup.js')");
+	puts(duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_destroy_heap(ctx);
