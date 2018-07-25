@@ -1,6 +1,7 @@
 shell = {
 	run: true,
 	current_dir: "/",
+	path: "/bin",
 	
 	exec: function() {
 		while(this.run) {
@@ -8,35 +9,42 @@ shell = {
 			line = line.trim().match(/(?=\S)[^"\s]*(?:"[^\\"]*(?:\\[\s\S][^\\"]*)*"[^"\s]*)*/g); // stolen from https://stackoverflow.com/a/40120309
 			for(var i = 0; i < line.length; i++) if(line[i][0] == "\"" && line[i][line[i].length-1] == "\"") line[i] = line[i].slice(1, -1);
 			
-			var runthis = this.functions[line[0]];
-			if(typeof(runthis) !== "function") os.print("'" + line[0] + "' is not a command");
-			else runthis(line.slice(1));
+			if(line[0] == "exit") {
+					this.run = false;
+					continue;
+			}
+			
+			var filec;
+			var args = line.slice(1);
+			var filename = line[0];
+			if(filename.slice(-3) != ".js") filename = filename + ".js";
+			
+			var paths = this.path.split(":");
+			for(var i = 0; i < paths.length; i++) {
+				filec = os.read(paths[i] + "/" + filename);
+				if(filec) {
+					eval("(" + filec + ")")(args, shell.current_dir);
+					break;
+				}
+			}
+			
+			if(filec) continue;
+			os.print("'" + filename + "' is not a command");
 		}
 	},
 	
-	functions: {
-		exit: function() {
-			shell.run = false;
-		},
-		cd: function(args) {
-			var folder = args.join(" ");
-			path = os.chdir(folder);
-			if(path) {
-				shell.current_dir = path;
-			} else {
-				os.print("'" + folder + "' is not a directory");
-			}
-		},
-		ls: function(args) {
-			os.list(args.join(" ")).forEach(function(e) {
-				os.print(e);
-			});
-		},
-		cat: function(args) {
-			var filename = args.join(" ");
-			var contents = os.read(filename);
-			if(contents) os.print(contents);
-			else os.print("'" + filename + "' can't be read");
-		}
+	exit: function() {
+		this.run = false;
+	},
+	
+	resolve: function(path) {
+		if(path[0] == "/") return path;
+		return this.current_dir + path;
+	},
+	
+	chdir: function(path) {
+		var result = os.chdir(this.resolve(path));
+		if(result) this.current_dir = result;
+		return result;
 	}
 };
