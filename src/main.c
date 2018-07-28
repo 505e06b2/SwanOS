@@ -77,14 +77,29 @@ int main() {
 	duk_push_c_function(ctx, native_readfile, DUK_VARARGS);
 	duk_put_prop_string(ctx, os_object, "read"); //read: native_readfile;
 	
+	duk_push_c_function(ctx, native_writefile, DUK_VARARGS);
+	duk_put_prop_string(ctx, os_object, "write"); //write: native_writefile;
+	
+	duk_push_c_function(ctx, native_removefile, DUK_VARARGS);
+	duk_put_prop_string(ctx, os_object, "remove"); //remove: native_removefile;
+	
 	duk_push_c_function(ctx, native_stdin, DUK_VARARGS);
 	duk_put_prop_string(ctx, os_object, "stdin"); //stdin: native_stdin;
+	
+	duk_push_c_function(ctx, native_mkdir, DUK_VARARGS);
+	duk_put_prop_string(ctx, os_object, "mkdir"); //mkdir: native_mkdir;
 	
 	duk_push_c_function(ctx, native_chdir, DUK_VARARGS);
 	duk_put_prop_string(ctx, os_object, "chdir"); //chdir: native_chdir;
 	
+	duk_push_c_function(ctx, native_rmdir, DUK_VARARGS);
+	duk_put_prop_string(ctx, os_object, "rmdir"); //rmdir: native_rmdir;
+	
 	duk_push_c_function(ctx, native_listdir, DUK_VARARGS);
 	duk_put_prop_string(ctx, os_object, "list"); //list: native_listdir;
+	
+	duk_push_c_function(ctx, native_exists, DUK_VARARGS);
+	duk_put_prop_string(ctx, os_object, "exists"); //exists: native_exists;
 	
 	duk_put_global_string(ctx, "os"); //name the object: `os = {}`
 	
