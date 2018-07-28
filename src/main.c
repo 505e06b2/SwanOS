@@ -96,7 +96,7 @@ int main() {
 	duk_put_prop_string(ctx, os_object, "rmdir"); //rmdir: native_rmdir;
 	
 	duk_push_c_function(ctx, native_listdir, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "list"); //list: native_listdir;
+	duk_put_prop_string(ctx, os_object, "listdir"); //list: native_listdir;
 	
 	duk_push_c_function(ctx, native_exists, DUK_VARARGS);
 	duk_put_prop_string(ctx, os_object, "exists"); //exists: native_exists;
