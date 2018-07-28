@@ -12,6 +12,7 @@
 					switch(type) {
 						case "directory":
 							recurse_dirs(current);
+							os.rmdir(current);
 							return false;
 						case "file":
 							if(!os.remove(current)) {
