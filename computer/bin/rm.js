@@ -32,6 +32,7 @@
 			os.rmdir(resolved);
 			
 		} else {
+			//os.print(shell.resolve(args[0]));
 			if(!os.remove(shell.resolve(args[0]))) os.print("Couldn't remove: '" + args[0] + "'");
 		}
 	}
