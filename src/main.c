@@ -53,7 +53,7 @@ typedef struct native_to_js { //for the loop
 int main() {
 	{ //Scope this so that when we're done, the buffer is removed, etc
 		char buffer[1024];
-		const char FOLDER_NAME[] = "/computer/";
+		const char FOLDER_NAME[] = "/computer"; // <- DO NOT PUT A SLASH ON THE END
 		getcwd(buffer, sizeof(buffer));
 		
 		size_t path_size = strlen(buffer);
