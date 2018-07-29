@@ -45,6 +45,11 @@ const char *resolve_path_to_js(const char *path) {
 	return path + BASE_PATH_SIZE-1; //"remove" prefix path, but keep '/'
 }
 
+typedef struct native_to_js { //for the loop
+	duk_ret_t (*native)(duk_context *);
+	const char *js;
+} native_to_js;
+
 int main() {
 	{ //Scope this so that when we're done, the buffer is removed, etc
 		char buffer[1024];
@@ -63,43 +68,33 @@ int main() {
 		CURRENT_PATH_SIZE = BASE_PATH_SIZE;
 	}
 	
+	//Create heap
 	duk_context *ctx = duk_create_heap_default();
 	
 	//Create object
 	duk_idx_t os_object = duk_push_object(ctx);
 	
-	duk_push_c_function(ctx, native_puts, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "print"); //print: native_puts;
-	
-	duk_push_c_function(ctx, native_runfile, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "run"); //run: native_runfile;
-	
-	duk_push_c_function(ctx, native_readfile, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "read"); //read: native_readfile;
-	
-	duk_push_c_function(ctx, native_writefile, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "write"); //write: native_writefile;
-	
-	duk_push_c_function(ctx, native_removefile, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "remove"); //remove: native_removefile;
-	
-	duk_push_c_function(ctx, native_stdin, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "stdin"); //stdin: native_stdin;
-	
-	duk_push_c_function(ctx, native_mkdir, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "mkdir"); //mkdir: native_mkdir;
-	
-	duk_push_c_function(ctx, native_chdir, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "chdir"); //chdir: native_chdir;
-	
-	duk_push_c_function(ctx, native_rmdir, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "rmdir"); //rmdir: native_rmdir;
-	
-	duk_push_c_function(ctx, native_listdir, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "listdir"); //list: native_listdir;
-	
-	duk_push_c_function(ctx, native_exists, DUK_VARARGS);
-	duk_put_prop_string(ctx, os_object, "exists"); //exists: native_exists;
+	{ //scope this loop, so we can get rid of it after we need it
+		native_to_js all_functions[] = {
+			{native_puts, "print"},
+			{native_runfile, "run"},
+			{native_sandbox, "sandbox"},
+			{native_readfile, "read"},
+			{native_writefile, "write"},
+			{native_removefile, "remove"},
+			{native_stdin, "stdin"},
+			{native_mkdir, "mkdir"},
+			{native_chdir, "chdir"},
+			{native_rmdir, "rmdir"},
+			{native_listdir, "listdir"},
+			{native_exists, "exists"}
+		};
+		
+		for(size_t i = 0, e = sizeof(all_functions) / sizeof(native_to_js); i < e; i++) { //we need to divide so we can get the length, and not just bytes
+			duk_push_c_function(ctx, all_functions[i].native, DUK_VARARGS);
+			duk_put_prop_string(ctx, os_object, all_functions[i].js);
+		}
+	}
 	
 	duk_put_global_string(ctx, "os"); //name the object: `os = {}`
 	

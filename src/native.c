@@ -6,7 +6,7 @@ duk_ret_t native_puts(duk_context *ctx) { //Just prints lmao
 	return 0;
 }
 
-duk_ret_t native_listdir(duk_context *ctx) { //Just prints lmao
+duk_ret_t native_listdir(duk_context *ctx) { //lists directory as array
 	if(duk_get_top(ctx) == 0) return 0;
 	const char *path = resolve_path(duk_to_string(ctx, 0));
 	
@@ -28,7 +28,7 @@ duk_ret_t native_listdir(duk_context *ctx) { //Just prints lmao
 	return 1;
 }
 
-duk_ret_t native_exists(duk_context *ctx) {
+duk_ret_t native_exists(duk_context *ctx) { //returns either "file" or "directory", fails with undefined
 	if(duk_get_top(ctx) == 0) return 0;
 	
 	struct stat properties;
@@ -77,7 +77,7 @@ duk_ret_t native_writefile(duk_context *ctx) { //return undefined if syntax inco
 	return 1;
 }
 
-duk_ret_t native_removefile(duk_context *ctx) {
+duk_ret_t native_removefile(duk_context *ctx) { //delete file
 	if(duk_get_top(ctx) == 0) return 0;
 	
 	if(remove(resolve_path(duk_to_string(ctx, 0))) != 0) {
@@ -89,7 +89,7 @@ duk_ret_t native_removefile(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t native_runfile(duk_context *ctx) {
+duk_ret_t native_runfile(duk_context *ctx) { //read and eval file
 	if(duk_get_top(ctx) == 0) return 0;
 	FILE *f = fopen(resolve_path(duk_to_string(ctx, 0)), "r");
 	if(f == NULL) return 0;
@@ -102,7 +102,13 @@ duk_ret_t native_runfile(duk_context *ctx) {
 		chunks++;
 	}
 	duk_join(ctx, chunks);
-	duk_peval(ctx) != 0;
+	duk_peval(ctx);
+	return 1;
+}
+
+duk_ret_t native_sandbox(duk_context *ctx) { //like eval but won't kill program on error
+	if(duk_get_top(ctx) == 0) return 0;
+	duk_peval(ctx);
 	return 1;
 }
 
@@ -123,7 +129,7 @@ duk_ret_t native_stdin(duk_context *ctx) { //get user input
 	return 0;
 }
 
-duk_ret_t native_mkdir(duk_context *ctx) {
+duk_ret_t native_mkdir(duk_context *ctx) { //create directory
 	if(duk_get_top(ctx) == 0) return 0;
 	
 	if(mkdir(resolve_path(duk_to_string(ctx, 0)), 755) != 0) {
@@ -135,7 +141,7 @@ duk_ret_t native_mkdir(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t native_rmdir(duk_context *ctx) {
+duk_ret_t native_rmdir(duk_context *ctx) { //remove empty directory
 	if(duk_get_top(ctx) == 0) return 0;
 	
 	if(rmdir(resolve_path(duk_to_string(ctx, 0))) != 0) {

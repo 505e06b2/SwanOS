@@ -1,5 +1,5 @@
 term.exe: duktape.dll bin/main.o bin/native.o bin/windows.o
-	gcc $^ -o $@ -Iinclude
+	gcc -O2 $^ -o $@ -Iinclude
 	strip $@
 	
 duktape.dll: src/duktape.c

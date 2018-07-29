@@ -28,8 +28,12 @@ shell = {
 				r = os.run(paths[i] + filename);
 				if(r) {
 					if(typeof(r) === "function") {
-						r(args);
-					} else os.print(r);
+						try {
+							r(args);
+						} catch(err) {
+							os.print(">>> " + err);
+						}
+					} else os.print("\"Executables\" are functions wrapped in brackets, like (function(args) {})... Here's the contents of your file: " + r);
 					break;
 				}
 			}
@@ -37,6 +41,8 @@ shell = {
 			if(r) continue;
 			os.print("'" + filename + "' is not a command");
 		}
+		
+		return "Shell Terminated";
 	},
 	
 	exit: function() {
