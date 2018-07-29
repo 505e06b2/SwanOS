@@ -1,2 +1,5 @@
+cygwin_nppexec.bat
 nppexec.bat
-run.sh
+macros/*
+*.dll
+*.exe

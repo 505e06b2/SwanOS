@@ -1,31 +1,27 @@
 #include "main.h"
 
-char *resolve_path(const char *path) { //restrict users into the /computer/ folder
-	char *new_memory;
-	char *end;
+char *resolve_path(const char *path) { //restrict users into the /computer folder
 	
-	if(path[0] == '/') {
-		new_memory = realloc(CURRENT_PATH, BASE_PATH_SIZE + strlen(path) +1);
-		end = new_memory + BASE_PATH_SIZE;
-	} else {
-		new_memory = realloc(CURRENT_PATH, CURRENT_PATH_SIZE + strlen(path) +1);
-		end = new_memory + CURRENT_PATH_SIZE;
-		while(*end != '/') end--; //removes file from path
-		end++;
+	if(path[0] != '/') {
+		printf("[%s] EVERY PATH SENT TO A NATIVE MUST BE ABSOLUTE => %s\n", (CURRENT_PATH + BASE_PATH_SIZE), path); //Show file currently running, and the path which it doesn't like
+		return NULL;
 	}
-	
-	if(new_memory == NULL) return NULL; //failed to realloc
-	CURRENT_PATH = new_memory;
 	
 	//backup current path
 	char CURRENT_PATH_BACKUP[CURRENT_PATH_SIZE+1];
 	size_t CURRENT_PATH_BACKUP_SIZE = CURRENT_PATH_SIZE+1;
 	memcpy(CURRENT_PATH_BACKUP, CURRENT_PATH, CURRENT_PATH_BACKUP_SIZE);
 	
+	char *new_memory = realloc(CURRENT_PATH, BASE_PATH_SIZE + strlen(path) +1);
+	if(new_memory == NULL) return NULL; //failed to realloc
+	
+	CURRENT_PATH = new_memory;
+	char *end = new_memory + BASE_PATH_SIZE;
+	
 	memcpy(end, path, strlen(path)+1); //add new path to current one
 	
-	char buffer[MAX_PATH];
-	realpath(CURRENT_PATH, buffer); //convert to real path with no ".."
+	char buffer[PATH_MAX+1];
+	char *failed = realpath(CURRENT_PATH, buffer); //convert to real path with no ".."
 	
 	if(strncmp(buffer, CURRENT_PATH, BASE_PATH_SIZE) == 0) { //if the base path is disturbed, then use the backup
 		CURRENT_PATH_SIZE = strlen(buffer);
@@ -38,6 +34,7 @@ char *resolve_path(const char *path) { //restrict users into the /computer/ fold
 	//puts(CURRENT_PATH);
 	
 	CURRENT_PATH = realloc(CURRENT_PATH, CURRENT_PATH_SIZE+1); //shrink to size
+	if(failed == NULL) return NULL;
 	return CURRENT_PATH;
 }
 
@@ -52,20 +49,28 @@ typedef struct native_to_js { //for the loop
 
 int main() {
 	{ //Scope this so that when we're done, the buffer is removed, etc
-		char buffer[1024];
-		const char FOLDER_NAME[] = "/computer"; // <- DO NOT PUT A SLASH ON THE END
-		getcwd(buffer, sizeof(buffer));
+		char buffer[PATH_MAX+1];
+		{ //Get initial string for currentpath using realpath as it's how we'll be comparing strings later anyways
+			char initialbuff[sizeof(buffer)];
+			const char FOLDER_NAME[] = "/computer"; // <- DO NOT PUT A SLASH ON THE END
+			getcwd(initialbuff, sizeof(initialbuff));
+			strcat(initialbuff, FOLDER_NAME);
+			realpath(initialbuff, buffer); //I would just use NULL as the second param, but I was this function to be portable with Windows, this could be a todo, but it's not really worth making...
+		}
+		
 		
 		size_t path_size = strlen(buffer);
-		CURRENT_PATH = malloc(path_size + sizeof(FOLDER_NAME)); //sizeof(FOLDER_NAME) already has \0, to mark the end of the string
+		CURRENT_PATH = malloc(path_size+1); //+1 for \0
 		memcpy(CURRENT_PATH, buffer, path_size);
-		memcpy(CURRENT_PATH + path_size, FOLDER_NAME, sizeof(FOLDER_NAME)); //place the folder name at the end (don't need strcat now)
-		BASE_PATH_SIZE = strlen(CURRENT_PATH);
 		
 		char *c = CURRENT_PATH;
-		while(*c++) if(*c == '\\') *c = '/'; //it'll never be BASE_PATH[0], so it's fine putting the ++ there
+		for(; *c; c++) {
+			if(*c == '\\') *c = '/';
+		}
 		
+		BASE_PATH_SIZE = path_size;
 		CURRENT_PATH_SIZE = BASE_PATH_SIZE;
+		chdir(CURRENT_PATH); //CHANGE DIR
 	}
 	
 	//Create heap

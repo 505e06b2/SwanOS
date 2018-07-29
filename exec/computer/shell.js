@@ -1,7 +1,7 @@
 shell = {
 	run: true,
 	current_dir: "/",
-	path: ".:/bin",
+	path: "/bin",
 	startup_time: Date.now(),
 	
 	exec: function() {
@@ -24,9 +24,12 @@ shell = {
 			filename = "/" + filename;
 			
 			var paths = this.path.split(":");
+			paths = [this.current_dir].concat(paths); //Add current dir to start of paths
+			
 			for(var i = 0; i < paths.length; i++) {
 				r = os.run(paths[i] + filename);
 				if(r) {
+					os.print(paths[i] + filename);
 					if(typeof(r) === "function") {
 						try {
 							r(args);

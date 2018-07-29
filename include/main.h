@@ -38,7 +38,6 @@ duk_ret_t native_listdir(duk_context *);
 //windows.c
 #ifdef WIN32
 
-#define MAX_PATH _MAX_PATH //it is defined in windows.h, but I really don't want to include it here
 #define mkdir(A, B) mkdir(A) //emulate posix
 char *realpath(const char *restrict, char *restrict);
 
