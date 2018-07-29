@@ -31,7 +31,7 @@ shell = {
 						try {
 							r(args);
 						} catch(err) {
-							os.print(">>> " + err);
+							os.print(">>> " + paths[i] + filename + " => " + err);
 						}
 					} else os.print("\"Executables\" are functions wrapped in brackets, like (function(args) {})... Here's the contents of your file: " + r);
 					break;
