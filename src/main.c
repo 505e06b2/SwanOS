@@ -7,11 +7,6 @@ char *resolve_path(const char *path) { //restrict users into the /computer folde
 		return NULL;
 	}
 	
-	//backup current path
-	char CURRENT_PATH_BACKUP[CURRENT_PATH_SIZE+1];
-	size_t CURRENT_PATH_BACKUP_SIZE = CURRENT_PATH_SIZE+1;
-	memcpy(CURRENT_PATH_BACKUP, CURRENT_PATH, CURRENT_PATH_BACKUP_SIZE);
-	
 	char *new_memory = realloc(CURRENT_PATH, BASE_PATH_SIZE + strlen(path) +1);
 	if(new_memory == NULL) return NULL; //failed to realloc
 	
@@ -27,19 +22,19 @@ char *resolve_path(const char *path) { //restrict users into the /computer folde
 		CURRENT_PATH_SIZE = strlen(buffer);
 		memcpy(CURRENT_PATH, buffer, CURRENT_PATH_SIZE+1);
 	} else {
-		memcpy(CURRENT_PATH, CURRENT_PATH_BACKUP, CURRENT_PATH_BACKUP_SIZE);
-		CURRENT_PATH_SIZE = CURRENT_PATH_BACKUP_SIZE;
+		CURRENT_PATH_SIZE = 0; //Don't use it.
+		return NULL;
 	}
 	
 	//puts(CURRENT_PATH);
 	
 	CURRENT_PATH = realloc(CURRENT_PATH, CURRENT_PATH_SIZE+1); //shrink to size
-	if(failed == NULL) return NULL;
 	return CURRENT_PATH;
 }
 
 const char *resolve_path_to_js(const char *path) {
-	return path + BASE_PATH_SIZE-1; //"remove" prefix path, but keep '/'
+	const char *returnval = path + BASE_PATH_SIZE;
+	return (returnval[0] == '\0') ? "/" : returnval; //"remove" prefix path
 }
 
 typedef struct native_to_js { //for the loop

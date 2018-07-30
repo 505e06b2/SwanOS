@@ -1,5 +1,4 @@
-cygwin_nppexec.bat
-nppexec.bat
+*.bat
 macros/*
 *.dll
 *.exe
