@@ -1,6 +1,7 @@
 (function(args) {
 	var filename = args.join(" ");
+	os.print(shell.resolve(filename))
 	var contents = os.read(shell.resolve(filename));
-	if(contents) os.print(contents);
+	if(typeof(contents) != "undefined") os.print(contents);
 	else throw filename + " can't be read";
 })

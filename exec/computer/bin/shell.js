@@ -12,7 +12,7 @@
 	
 	self.resolve = function(path) {
 		if(path[0] == "/") return path;
-		return this.current_dir + path;
+		return this.current_dir + "/" + path;
 	}
 	
 	self.chdir = function(path) {
