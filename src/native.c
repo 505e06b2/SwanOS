@@ -51,7 +51,44 @@ duk_ret_t native_readfile(duk_context *ctx) { //read file and return the content
 
 duk_ret_t native_writefile(duk_context *ctx) { //return undefined if syntax incorrect, return false if unable to write, true if successful
 	if(duk_get_top(ctx) < 2) return 0; //2 args, first is filename, second is content as string
-	FILE *f = fopen(resolve_path(duk_to_string(ctx, 0)), "w");
+	
+	duk_size_t filepath_len;
+	const char *filepath = duk_get_lstring(ctx, 0, &filepath_len);
+	
+	if(filepath[0] != '/') {
+		printf("[%s] EVERY PATH SENT TO A NATIVE MUST BE ABSOLUTE => %s\n", (CURRENT_PATH + BASE_PATH_SIZE), filepath); //Show file currently running, and the path which it doesn't like
+		duk_push_boolean(ctx, 0);
+		return 1;
+	}
+	
+	const char *c = filepath + filepath_len; //-1 for \0
+	for(; *c != '/'; c--); //will always start with '/', go back until we get to the dir
+	c++;
+	
+	char *createdpath = malloc( (c - filepath) +1 );
+	memcpy(createdpath, filepath, (c - filepath));
+	createdpath[(c - filepath)+1] = '\0';
+	
+	const char *resolved = resolve_path(createdpath);
+	free(createdpath);
+	
+	if(resolved == NULL) {
+		duk_push_boolean(ctx, 0);
+		return 1;
+	}
+	
+	{ //dir exists, let's create the path to the new file
+		size_t resolved_len = strlen(resolved);
+		size_t filename_len = strlen(c);
+		createdpath = malloc(resolved_len + filename_len +2); //+1 for \0, +1 for '/'
+		memcpy(createdpath, resolved, resolved_len);
+		memcpy(createdpath + resolved_len, (c-1), filename_len +2);
+		puts(createdpath);
+	}
+	
+	FILE *f = fopen(createdpath, "w");
+	free(createdpath);
+	
 	if(f == NULL) {
 		duk_push_boolean(ctx, 0);
 		return 1;

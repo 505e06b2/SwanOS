@@ -17,7 +17,7 @@
 								return false;
 							case "file":
 								if(!os.remove(current)) {
-									os.print("Couldn't remove: '" + args[0] + "'");
+									throw current + " couldn't be removed";
 									return true;
 								}
 								return false;
@@ -33,7 +33,7 @@
 			
 		} else {
 			//os.print(shell.resolve(args[0]));
-			if(!os.remove(shell.resolve(args[0]))) os.print("Couldn't remove: '" + args[0] + "'");
+			if(!os.remove(shell.resolve(args[0]))) throw args[0] + " couldn't be removed";
 		}
 	}
 })

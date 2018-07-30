@@ -25,6 +25,10 @@
 		return Math.round((Date.now() - self.startup_time)/1000);
 	}
 	
+	self.printErr = function(file, error) {
+		os.print("> ERROR [" + file + "] => " + error);
+	}
+	
 	self.exec = function() {
 		while(this.run) {
 			var line = os.stdin(self.current_dir.replace(/^\/+|\/+$/gm, "") + "> "); //regex for removing excess '/'
@@ -52,11 +56,13 @@
 				if(r) {
 					if(typeof(r) === "function") {
 						try {
+							self.script_name = paths[i] + filename;
 							r(args);
+							self.script_name = undefined;
 						} catch(err) {
-							os.print(">>> [" + paths[i] + filename + "] => " + err);
+							self.printErr(paths[i] + filename, err);
 						}
-					} else os.print("\"Executables\" are functions wrapped in brackets, like (function(args) {})... Here's the contents of your file: " + r);
+					} else self.printErr(paths[i] + filename, r);
 					break;
 				}
 			}

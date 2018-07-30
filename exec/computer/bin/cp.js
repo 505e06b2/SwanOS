@@ -4,11 +4,9 @@
 		if(contents) {
 			var destination = shell.resolve(args[1])
 			if(os.exists(destination) === "directory") destination += "/" + args[0].split("/")[-1];
-			if(!os.write(destination, contents)) os.print("Couldn't write to: '" + destination + "'");
-		} else {
-			os.print("Couldn't read: '" + args[0] + "'");
-		}
-	} else {
-		os.print("Not enough arguments");
-	}
+			if(!os.write(destination, contents)) throw destination + " can't be written to";
+			
+		} else throw filename + " can't be read";
+		
+	} else throw "Not enough arguments";
 })

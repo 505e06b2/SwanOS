@@ -16,9 +16,9 @@ char *resolve_path(const char *path) { //restrict users into the /computer folde
 	memcpy(end, path, strlen(path)+1); //add new path to current one
 	
 	char buffer[PATH_MAX+1];
-	char *failed = realpath(CURRENT_PATH, buffer); //convert to real path with no ".."
+	char *successful = realpath(CURRENT_PATH, buffer); //convert to real path with no ".."
 	
-	if(strncmp(buffer, CURRENT_PATH, BASE_PATH_SIZE) == 0) { //if the base path is disturbed, then use the backup
+	if(successful && strncmp(buffer, CURRENT_PATH, BASE_PATH_SIZE) == 0) { //if the base path is disturbed, then fail
 		CURRENT_PATH_SIZE = strlen(buffer);
 		memcpy(CURRENT_PATH, buffer, CURRENT_PATH_SIZE+1);
 	} else {
