@@ -17,6 +17,10 @@ char *realpath(const char *restrict file_name, char *restrict resolved_name) {
 	return resolved_name;
 }
 
-int stdin_char() {
+int system_getchar() {
 	return getch();
+}
+
+void system_sleep(unsigned int milliseconds) {
+	Sleep(milliseconds);
 }

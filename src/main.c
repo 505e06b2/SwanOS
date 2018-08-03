@@ -77,6 +77,7 @@ int main() {
 	{ //scope this loop, so we can get rid of it after we need it
 		const native_to_js all_functions[] = {
 			{native_puts, "print"},
+			{native_sleep, "sleep"},
 			{native_runfile, "run"},
 			{native_sandbox, "sandbox"},
 			{native_readfile, "read"},

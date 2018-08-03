@@ -19,6 +19,7 @@ const char *resolve_path_to_js(const char *);
 
 //native.c
 duk_ret_t native_puts(duk_context *);
+duk_ret_t native_sleep(duk_context *);
 
 duk_ret_t native_runfile(duk_context *);
 duk_ret_t native_sandbox(duk_context *);
@@ -37,7 +38,8 @@ duk_ret_t native_chdir(duk_context *);
 duk_ret_t native_listdir(duk_context *);
 
 //OS specific: unix.c/windows.c
-int stdin_char();
+int system_getchar();
+void system_sleep(unsigned int);
 
 //windows.c
 #ifdef WIN32

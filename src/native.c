@@ -6,6 +6,12 @@ duk_ret_t native_puts(duk_context *ctx) { //Just prints lmao
 	return 0;
 }
 
+duk_ret_t native_sleep(duk_context *ctx) { //Sleeps the thread
+	if(duk_get_top(ctx) == 0) return 0;
+	system_sleep((unsigned int) duk_get_int(ctx, 0));
+	return 0;
+}
+
 // ============ EXECUTING =================
 
 duk_ret_t native_runfile(duk_context *ctx) { //read and eval file
@@ -151,7 +157,7 @@ duk_ret_t native_getline(duk_context *ctx) { //get user input
 }
 
 duk_ret_t native_getchar(duk_context *ctx) { //get char
-	const int c = stdin_char();
+	const int c = system_getchar();
 	if(c < 0) return 0; //EOF or something, just in case we get a fail...
 	
 	const char letter = c; //cast to char for below
