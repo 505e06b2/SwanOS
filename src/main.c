@@ -42,7 +42,7 @@ typedef struct native_to_js { //for the loop
 	const char *js;
 } native_to_js;
 
-int main() {
+int main(int argc, char *argv[]) {
 	{ //Scope this so that when we're done, the buffer is removed, etc
 		char buffer[PATH_MAX+1];
 		{ //Get initial string for currentpath using realpath as it's how we'll be comparing strings later anyways
@@ -101,7 +101,23 @@ int main() {
 	duk_put_global_string(ctx, "os"); //name the object: `os = {}`
 	
 	//Run script
-	duk_peval_string(ctx, "os.run('/startup.js')");
+	if(argc > 1) { //interpret and run args
+		duk_push_string(ctx, "");
+		duk_push_string(ctx, "var shell = {}; shell.resolve = function(a) {return a}; var s = os.run('");
+		duk_push_string(ctx, argv[1]);
+		duk_push_string(ctx, "'); if(typeof(s) === 'function') s([");
+		for(int i = 2; i < argc; i++) { //create "args", like in shell
+			duk_push_string(ctx, "'");
+			duk_push_string(ctx, argv[i]);
+			duk_push_string(ctx, "', ");
+		}
+		duk_push_string(ctx, "]); ('Complete')"); //return value in brackets
+		
+		duk_join(ctx, 4 + ((argc-2) * 3) );
+		duk_peval(ctx);
+		
+	} else duk_peval_string(ctx, "os.run('/startup.js')"); //default
+	
 	puts(duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 
