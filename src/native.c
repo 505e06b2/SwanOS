@@ -133,21 +133,30 @@ duk_ret_t native_exists(duk_context *ctx) { //returns either "file" or "director
 
 // ============ STDIN ====================
 
-duk_ret_t native_stdin(duk_context *ctx) { //get user input
+duk_ret_t native_getline(duk_context *ctx) { //get user input
 	char buffer[1024];
 	if(duk_get_top(ctx) > 0) {
 		printf("%s", duk_to_string(ctx, 0));
 		fflush(stdout); //Just in case the output doesn't get flush (like in some IDEs / Terminals)
 	}
 	
-	char *check = fgets(buffer, sizeof(buffer), stdin);
-	size_t check_len = strlen(buffer)-1;
+	const char *check = fgets(buffer, sizeof(buffer), stdin);
+	const size_t check_len = strlen(buffer)-1;
 	
 	if(check) {
 		duk_push_lstring(ctx, buffer, check_len); //remove \n from fgets
 		return 1;
 	}
 	return 0;
+}
+
+duk_ret_t native_getchar(duk_context *ctx) { //get char
+	const int c = stdin_char();
+	if(c < 0) return 0; //EOF or something, just in case we get a fail...
+	
+	const char letter = c; //cast to char for below
+	puts(duk_push_lstring(ctx, &letter, 1));
+	return 1;
 }
 
 // ============ FOLDERS ==================

@@ -75,14 +75,15 @@ int main() {
 	duk_idx_t os_object = duk_push_object(ctx);
 	
 	{ //scope this loop, so we can get rid of it after we need it
-		native_to_js all_functions[] = {
+		const native_to_js all_functions[] = {
 			{native_puts, "print"},
 			{native_runfile, "run"},
 			{native_sandbox, "sandbox"},
 			{native_readfile, "read"},
 			{native_writefile, "write"},
 			{native_removefile, "remove"},
-			{native_stdin, "stdin"},
+			{native_getline, "getline"},
+			{native_getchar, "getchar"},
 			{native_mkdir, "mkdir"},
 			{native_chdir, "chdir"},
 			{native_rmdir, "rmdir"},

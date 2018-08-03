@@ -31,7 +31,7 @@
 	
 	self.exec = function() {
 		while(this.run) {
-			var line = os.stdin(self.current_dir.replace(/^\/+|\/+$/gm, "") + "> "); //regex for removing excess '/'
+			var line = os.getline(self.current_dir.replace(/^\/+|\/+$/gm, "") + "> "); //regex for removing excess '/'
 			if(line === "") continue;
 			
 			line = line.trim().match(/(?=\S)[^"\s]*(?:"[^\\"]*(?:\\[\s\S][^\\"]*)*"[^"\s]*)*/g); // stolen from https://stackoverflow.com/a/40120309

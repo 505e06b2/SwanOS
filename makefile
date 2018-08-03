@@ -12,7 +12,7 @@ UNAME := $(shell uname)
 ifneq ($(UNAME),)
 #Unix specific
 LDFLAGS += -lm
-DEPENDENCIES += $(BINDIR)/duktape.o
+DEPENDENCIES += $(BINDIR)/unix.o $(BINDIR)/duktape.o
 else
 #Windows
 DEPENDENCIES += $(BINDIR)/windows.o $(EXECDIR)/duktape.dll

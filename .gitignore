@@ -2,3 +2,4 @@
 macros/*
 *.dll
 *.exe
+os/*

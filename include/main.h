@@ -28,12 +28,16 @@ duk_ret_t native_writefile(duk_context *);
 duk_ret_t native_removefile(duk_context *);
 duk_ret_t native_exists(duk_context *);
 
-duk_ret_t native_stdin(duk_context *);
+duk_ret_t native_getline(duk_context *);
+duk_ret_t native_getchar(duk_context *);
 
 duk_ret_t native_mkdir(duk_context *);
 duk_ret_t native_rmdir(duk_context *);
 duk_ret_t native_chdir(duk_context *);
 duk_ret_t native_listdir(duk_context *);
+
+//OS specific: unix.c/windows.c
+int stdin_char();
 
 //windows.c
 #ifdef WIN32
