@@ -31,10 +31,10 @@
 	
 	self.exec = function() {
 		while(this.run) {
-			var line = os.getline(self.current_dir.replace(/^\/+|\/+$/gm, "") + "> "); //regex for removing excess '/'
+			var line = os.getline(self.current_dir.replace(/^\/+|\/+$/gm, "") + "> ").trim(); //regex for removing excess '/'
 			if(line === "") continue;
 			
-			line = line.trim().match(/(?=\S)[^"\s]*(?:"[^\\"]*(?:\\[\s\S][^\\"]*)*"[^"\s]*)*/g); // stolen from https://stackoverflow.com/a/40120309
+			line = line.match(/(?=\S)[^"\s]*(?:"[^\\"]*(?:\\[\s\S][^\\"]*)*"[^"\s]*)*/g); // stolen from https://stackoverflow.com/a/40120309
 			for(var i = 0; i < line.length; i++) if(line[i][0] === "\"" && line[i][line[i].length-1] === "\"") line[i] = line[i].slice(1, -1);
 			
 			if(line[0] === "exit") {
