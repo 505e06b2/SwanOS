@@ -21,12 +21,12 @@ duk_ret_t native_runfile(duk_context *ctx) { //read and eval file
 	char buffer[1024]; //read in 1k chunks
 	size_t chunks = 0;
 	size_t received_bytes = 0;
-	duk_push_string(ctx, ""); //delimiter
+	
 	while(received_bytes = fread(buffer, sizeof(char), sizeof(buffer), f)) {
 		duk_push_lstring(ctx, buffer, received_bytes);
 		chunks++;
 	}
-	duk_join(ctx, chunks);
+	duk_concat(ctx, chunks);
 	duk_peval(ctx);
 	return 1;
 }
@@ -46,12 +46,11 @@ duk_ret_t native_readfile(duk_context *ctx) { //read file and return the content
 	char buffer[1024]; //read in 1k chunks
 	size_t chunks = 0;
 	size_t received_bytes = 0;
-	duk_push_string(ctx, ""); //delimiter
 	while(received_bytes = fread(buffer, sizeof(char), sizeof(buffer), f)) {
 		duk_push_lstring(ctx, buffer, received_bytes);
 		chunks++;
 	}
-	duk_join(ctx, chunks);
+	duk_concat(ctx, chunks);
 	return 1;
 }
 

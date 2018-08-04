@@ -1,5 +1,5 @@
+#include "main.h"
 #include <windows.h> //to make this file not need to include the main project header
-#include <sys/stat.h>
 #include <conio.h> //getch
 
 char *realpath(const char *restrict file_name, char *restrict resolved_name) {
@@ -23,4 +23,12 @@ int system_getchar() {
 
 void system_sleep(unsigned int milliseconds) {
 	Sleep(milliseconds);
+}
+
+void system_loadlib(duk_context *ctx, const char *path) {
+	HMODULE lib = LoadLibrary(path);
+	if(lib == NULL)  return;
+	FARPROC findfunc = GetProcAddress(lib, "init");
+	if(findfunc == NULL)  return;
+	(void (*)(duk_context *))findfunc(ctx);
 }

@@ -100,9 +100,33 @@ int main(int argc, char *argv[]) {
 	
 	duk_put_global_string(ctx, "os"); //name the object: `os = {}`
 	
+	{ //Load plugins
+		FILE *f = fopen(ENABLED_PLUGINS_TXT, "r");
+		if(f) {
+			puts("> Loading Plugins...");
+			char path[PATH_MAX] = "plugins/";
+			size_t prefixlen = strlen(path);
+			char *pathconcat = path + prefixlen;
+			char *endofline;
+			while(fgets(pathconcat, sizeof(path), f)) {
+				endofline = strchr(pathconcat, '\n'); //start at pathconcat because it's the only part that changed
+				if(endofline) { //if there's a \n, there could be a \r prior
+					*endofline = '\0';
+					if(*(--endofline) == '\r') *endofline = '\0';
+				}
+				
+				if(*pathconcat != '#' && *pathconcat != '\0') { //the newlines got removed above
+					printf(">> Opening %s\n", pathconcat);
+					system_loadlib(ctx, path); //ignore comments
+				}
+			}
+			fclose(f);
+			puts("> Done\n");
+		} else printf("> Couldn't load %s\n", ENABLED_PLUGINS_TXT);
+	}
+	
 	//Run script
 	if(argc > 1) { //interpret and run args
-		duk_push_string(ctx, "");
 		duk_push_string(ctx, "var shell = {}; shell.resolve = function(a) {return a}; var s = os.run('");
 		duk_push_string(ctx, argv[1]);
 		duk_push_string(ctx, "'); if(typeof(s) === 'function') s([");
@@ -113,7 +137,7 @@ int main(int argc, char *argv[]) {
 		}
 		duk_push_string(ctx, "]); ('Complete')"); //return value in brackets
 		
-		duk_join(ctx, 4 + ((argc-2) * 3) );
+		duk_concat(ctx, 4 + ((argc-2) * 3) );
 		duk_peval(ctx);
 		
 	} else duk_peval_string(ctx, "os.run('/startup.js')"); //default

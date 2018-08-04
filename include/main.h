@@ -9,6 +9,8 @@
 
 #include "duktape.h"
 
+#define ENABLED_PLUGINS_TXT "plugins/enabled.txt"
+
 size_t BASE_PATH_SIZE;
 char *CURRENT_PATH;
 size_t CURRENT_PATH_SIZE;
@@ -40,6 +42,7 @@ duk_ret_t native_listdir(duk_context *);
 //OS specific: unix.c/windows.c
 int system_getchar();
 void system_sleep(unsigned int);
+void system_loadlib(duk_context *, const char *);
 
 //windows.c
 #ifdef WIN32
