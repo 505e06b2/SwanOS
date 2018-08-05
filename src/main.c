@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 		
 		BASE_PATH_SIZE = path_size;
 		CURRENT_PATH_SIZE = BASE_PATH_SIZE;
-		chdir(CURRENT_PATH); //CHANGE DIR
+		//chdir(CURRENT_PATH); //CHANGE DIR
 	}
 	
 	//Create heap
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
 				
 				if(*pathconcat != '#' && *pathconcat != '\0') { //the newlines got removed above
 					printf(">> Opening %s\n", pathconcat);
-					system_loadlib(ctx, path); //ignore comments
+					system_loadlib(ctx, path); //ignore comments and newlines
 				}
 			}
 			fclose(f);

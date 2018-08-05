@@ -25,8 +25,14 @@ void system_sleep(unsigned int milliseconds) {
 
 void system_loadlib(duk_context *ctx, const char *path) {
 	void *lib = dlopen(path, RTLD_LAZY);
-	if(lib == NULL)  return;
+	if(lib == NULL) {
+		printf(">> ERROR: Couldn't load '%s'\n", path);
+		return;
+	}
 	void *findfunc = dlsym(lib, "init");
-	if(findfunc == NULL)  return;
+	if(findfunc == NULL) {
+		printf(">> ERROR: No 'init' function in '%s'\n", path);
+		return;
+	}
 	(void (*)(duk_context *))findfunc(ctx);
 }
