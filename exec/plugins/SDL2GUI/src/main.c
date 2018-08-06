@@ -3,7 +3,7 @@
 void blitChar(const unsigned char c, const unsigned char colours, SDL_Rect *dest) {
 	if(c == '\n') {
 		dest->y += FONT_WH;
-		dest->x = 0;
+		dest->x = -1;
 		return;
 	}
 	
@@ -56,10 +56,20 @@ void renderFlip() {
 	SDL_SetRenderTarget(ptrs.r, ptrs.buffer); //set renderer to texture
 }
 
+void closeInput() {
+	close_request = SDL_FALSE;
+	blitChar(' ', 0x07, &cursor_pos); //remove cursor
+	cursor_pos.x = 0;
+	cursor_pos.y += FONT_WH;
+	SDL_StopTextInput();
+	SDL_CondSignal(ptrs.input_ready);
+}
+
 void eventLoop() {
 	char run = 1;
 	SDL_Event e;
 	char *input_char = NULL;
+	SDL_bool CTRL_flag = SDL_FALSE;
 	
 	SDL_StopTextInput();
 	while(run) { //here we go
@@ -82,31 +92,46 @@ void eventLoop() {
 					SDL_CondSignal(ptrs.input_ready); //make sure we don't block
                     break;
                 case SDL_TEXTINPUT:
-                    blitString(e.text.text, 0x07, &cursor_pos);
+                    blitChar(e.text.text[0], 0x07, &cursor_pos);
+					cursor_pos.x += FONT_WH;
 					*input_char = e.text.text[0];
 					input_char++;
                     break;
 				case SDL_KEYDOWN:
 					if(input_char) {
-						if(e.key.keysym.sym == '\r') { //return
+						if(e.key.keysym.sym == SDLK_RETURN) {
 							*input_char = '\0';
 							input_char = NULL;
-							close_request = SDL_FALSE;
-							cursor_pos.x = 0;
-							cursor_pos.y += FONT_WH;
-							SDL_StopTextInput();
-							SDL_CondSignal(ptrs.input_ready);
+							closeInput();
 							
-						} else if(e.key.keysym.sym == '\b') {
+						} else if(e.key.keysym.sym == SDLK_BACKSPACE) {
 							if(input_char != input_buffer) { //input buffer is the start point
+								blitChar(' ', 0x07, &cursor_pos); //remove cursor
 								input_char--;
 								cursor_pos.x -= FONT_WH;
-								if(cursor_pos.x < 0) cursor_pos.y -= FONT_WH;
+								if(cursor_pos.x < 0) {
+									cursor_pos.y -= FONT_WH;
+									cursor_pos.x = SCREEN_WIDTH - FONT_WH;
+								}
 								blitChar(' ', 0x07, &cursor_pos);
 							}
 							
+						} else if(CTRL_flag) {
+							switch(e.key.keysym.sym) {
+								case 'c':
+									*input_buffer = '\0'; //make buffer null
+									input_char = NULL;
+									closeInput();
+									break;
+							}
 						}
 					}
+					
+					if(e.key.keysym.sym == SDLK_LCTRL) CTRL_flag = SDL_TRUE;
+					break;
+					
+				case SDL_KEYUP:
+					if(e.key.keysym.sym == SDLK_LCTRL) CTRL_flag = SDL_FALSE;
 					break;
             }
 		}
@@ -123,6 +148,10 @@ void eventLoop() {
 		}
 		SDL_CondSignal(render_ready);
 		SDL_UnlockMutex(render);
+		
+		if(input_char) {
+			blitChar(' ', 0xcc, &cursor_pos);
+		}
 		
 		renderFlip();
 	}
