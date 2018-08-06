@@ -34,5 +34,5 @@ void system_loadlib(duk_context *ctx, const char *path) {
 		printf(">> ERROR: No 'init' function in '%s'\n", path);
 		return;
 	}
-	(void (*)(duk_context *))findfunc(ctx);
+	(void (*)(duk_context *, const char *))findfunc(ctx, path);
 }

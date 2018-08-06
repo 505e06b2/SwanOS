@@ -1,5 +1,6 @@
 #To enable a plugin, type the path from here, to the .dll/.so/etc
 #Whitespace is important, so make sure you don't have anything trailing or preceding, if you don't need it
+#I recommend using forward slashes for paths, as it's more portable
 #You can comment lines with a hash, the test dll is accessed below
 
 SDL2GUI/gui.dll

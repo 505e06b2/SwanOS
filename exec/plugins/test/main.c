@@ -7,7 +7,7 @@ duk_ret_t alt_print(duk_context *ctx) {
 	return 0;
 }
 
-void init(duk_context *ctx) {
+void init(duk_context *ctx, const char *) {
 	duk_bool_t ret = duk_get_global_string(ctx, "os"); //make "os" become -1
 	if(ret == 0) return; //no global "os" somehow
 	

@@ -6,7 +6,7 @@
 		line = os.getline("<js> ").trim();
 		if(line === "exit") return;
 		try {
-			eval(line);
+			os.print("< " + eval(line));
 		} catch(error) {
 			os.print("> ERROR => " + error);
 		}
