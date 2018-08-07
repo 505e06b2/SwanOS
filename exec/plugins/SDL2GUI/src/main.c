@@ -170,7 +170,7 @@ void eventLoop() {
 		SDL_UnlockMutex(render);
 		
 		if(input_char) {
-			blitChar(' ', 0xcc, &cursor_pos);
+			blitChar(' ', current_colour << 4, &cursor_pos);
 		}
 		
 		renderFlip();
@@ -239,8 +239,6 @@ int threadStart(void *arg) {
 	render_eol = SDL_TRUE;
 	input_request = SDL_FALSE;
 	close_request = SDL_TRUE;
-	SDL_CondSignal(render_ready);
-	SDL_UnlockMutex(render); //unlock here, because once it's signalled, the main thread mutex has to wait on the lock
 	
 	//set up colour palette
 	palette[0x0] = (Colour){0x28, 0x28, 0x28}; //bg
@@ -267,6 +265,9 @@ int threadStart(void *arg) {
 	SDL_SetRenderDrawColor(ptrs.r, palette[0].r, palette[0].g, palette[0].b, 0xff);
 	SDL_RenderClear(ptrs.r);
 	
+	SDL_CondSignal(render_ready);
+	SDL_UnlockMutex(render); //unlock here, because once it's signalled, the main thread mutex has to wait on the lock
+	
 	eventLoop();
 	
 	threadQuit();
@@ -287,15 +288,17 @@ EXPORT_FUNCTION void init(duk_context *ctx, const char *path) { //path to this d
 		if(ret == 0) return; //no global "os" somehow
 		
 		duk_idx_t guiobj = duk_push_object(ctx);
+		puts(">> Added [obj] os.gui");
 		
 		duk_push_c_function(ctx, gui_clear, DUK_VARARGS);
 		duk_put_prop_string(ctx, guiobj, "clear");
+		puts(">> Added [func] os.gui.clear");
 		
 		duk_push_c_function(ctx, gui_blit, DUK_VARARGS);
 		duk_put_prop_string(ctx, guiobj, "blit");
+		puts(">> Added [func] os.gui.blit");
 		
 		duk_put_prop_string(ctx, -2, "gui"); //guiobj is currently -1, "os" is -2
-		puts(">> Added [obj] os.gui");
 		
 		duk_push_c_function(ctx, alt_print, DUK_VARARGS);
 		duk_put_prop_string(ctx, -2, "print");
