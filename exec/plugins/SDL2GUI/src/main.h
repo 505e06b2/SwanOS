@@ -40,7 +40,7 @@ typedef struct Colour { //I'd use the SDL one, but it has RGB
 } Colour;
 
 Colour palette[16];
-unsigned char default_bgcolour;
+unsigned char current_colour;
 
 //these also have uses in the thread_start()
 SDL_mutex *render; //init: main function lock
@@ -61,5 +61,8 @@ void blitString(const unsigned char *, const unsigned char colours, SDL_Rect *);
 //native.c
 duk_ret_t alt_print(duk_context *);
 duk_ret_t alt_getline(duk_context *);
+
+duk_ret_t gui_clear(duk_context *);
+duk_ret_t gui_blit(duk_context *);
 
 #endif

@@ -58,7 +58,7 @@ void renderFlip() {
 
 void closeInput() {
 	close_request = SDL_FALSE;
-	blitChar(' ', 0x07, &cursor_pos); //remove cursor
+	blitChar(' ', current_colour, &cursor_pos); //remove cursor
 	cursor_pos.x = 0;
 	cursor_pos.y += FONT_WH;
 	SDL_StopTextInput();
@@ -83,7 +83,8 @@ void eventLoop() {
 			}
 			SDL_UnlockMutex(ptrs.input);
 		}
-	
+		
+		SDL_LockMutex(render); //lock render mutex here, since we use current_colour
 		while(SDL_PollEvent(&e) != 0) { //handle all events
 			switch(e.type) {
                 case SDL_QUIT:
@@ -92,7 +93,7 @@ void eventLoop() {
 					SDL_CondSignal(ptrs.input_ready); //make sure we don't block
                     break;
                 case SDL_TEXTINPUT:
-                    blitChar(e.text.text[0], 0x07, &cursor_pos);
+                    blitChar(e.text.text[0], current_colour, &cursor_pos);
 					cursor_pos.x += FONT_WH;
 					*input_char = e.text.text[0];
 					input_char++;
@@ -106,14 +107,14 @@ void eventLoop() {
 							
 						} else if(e.key.keysym.sym == SDLK_BACKSPACE) {
 							if(input_char != input_buffer) { //input buffer is the start point
-								blitChar(' ', 0x07, &cursor_pos); //remove cursor
+								blitChar(' ', current_colour, &cursor_pos); //remove cursor
 								input_char--;
 								cursor_pos.x -= FONT_WH;
 								if(cursor_pos.x < 0) {
 									cursor_pos.y -= FONT_WH;
 									cursor_pos.x = SCREEN_WIDTH - FONT_WH;
 								}
-								blitChar(' ', 0x07, &cursor_pos);
+								blitChar(' ', current_colour, &cursor_pos);
 							}
 							
 						} else if(CTRL_flag) {
@@ -136,9 +137,28 @@ void eventLoop() {
             }
 		}
 		
-		SDL_LockMutex(render);
 		if(render_string != NULL) {
-			blitString(render_string, 0x07, &cursor_pos);
+			if(memcmp(render_string, "\5\0\5", 3) == 0) {
+				switch(render_string[3]) {
+					case 'C':
+						{
+							unsigned char bg = current_colour >> 4;
+							SDL_SetRenderDrawColor(ptrs.r, palette[bg].r, palette[bg].g, palette[bg].b, 0xff);
+						}
+						SDL_RenderClear(ptrs.r);
+						cursor_pos.x = 0;
+						cursor_pos.y = 0;
+						break;
+					case 'B':
+						{
+							SDL_Rect temprect = {render_string[4] * FONT_WH, render_string[5] * FONT_WH, FONT_WH,FONT_WH};
+							blitChar(render_string[7], render_string[6], &temprect);
+						}
+						break;
+				}
+			} else {
+				blitString(render_string, current_colour, &cursor_pos);
+			}
 			if(render_eol) {
 				cursor_pos.x = 0;
 				cursor_pos.y += FONT_WH;
@@ -239,12 +259,12 @@ int threadStart(void *arg) {
 	palette[0xd] = (Colour){0xd3, 0x86, 0x9b}; //purple
 	palette[0xe] = (Colour){0x8e, 0xc0, 0x7c}; //aqua
 	palette[0xf] = (Colour){0xeb, 0xdb, 0xb2}; //fg
-	default_bgcolour = 0;
+	current_colour = 0x07;
 	
 	cursor_pos = (SDL_Rect){0,0, FONT_WH,FONT_WH};
 	
 	SDL_SetRenderTarget(ptrs.r, ptrs.buffer); //set renderer to texture
-	SDL_SetRenderDrawColor(ptrs.r, palette[default_bgcolour].r, palette[default_bgcolour].g, palette[default_bgcolour].b, 0xff);
+	SDL_SetRenderDrawColor(ptrs.r, palette[0].r, palette[0].g, palette[0].b, 0xff);
 	SDL_RenderClear(ptrs.r);
 	
 	eventLoop();
@@ -266,9 +286,16 @@ EXPORT_FUNCTION void init(duk_context *ctx, const char *path) { //path to this d
 		duk_bool_t ret = duk_get_global_string(ctx, "os"); //make "os" become -1
 		if(ret == 0) return; //no global "os" somehow
 		
-		duk_push_boolean(ctx, 1);
-		duk_put_prop_string(ctx, -2, "SDL2GUI"); //bool is currently -1, "os" is -2
-		puts(">> Added [bool] os.SDL2GUI");
+		duk_idx_t guiobj = duk_push_object(ctx);
+		
+		duk_push_c_function(ctx, gui_clear, DUK_VARARGS);
+		duk_put_prop_string(ctx, guiobj, "clear");
+		
+		duk_push_c_function(ctx, gui_blit, DUK_VARARGS);
+		duk_put_prop_string(ctx, guiobj, "blit");
+		
+		duk_put_prop_string(ctx, -2, "gui"); //guiobj is currently -1, "os" is -2
+		puts(">> Added [obj] os.gui");
 		
 		duk_push_c_function(ctx, alt_print, DUK_VARARGS);
 		duk_put_prop_string(ctx, -2, "print");
