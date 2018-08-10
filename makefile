@@ -11,7 +11,7 @@ DEPENDENCIES = $(BINDIR)/main.o $(BINDIR)/native.o
 UNAME := $(shell uname)
 ifneq ($(UNAME),)
 #Unix specific
-LDFLAGS += -lm
+LDFLAGS += -lm -ldl
 DEPENDENCIES += $(BINDIR)/unix.o $(BINDIR)/duktape.o
 else
 #Windows

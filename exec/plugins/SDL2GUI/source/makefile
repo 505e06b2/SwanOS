@@ -12,7 +12,9 @@ DEPENDENCIES = $(BINDIR)/main.o $(BINDIR)/native.o $(BINDIR)/eventloop.o
 UNAME := $(shell uname)
 ifneq ($(UNAME),)
 #Unix specific
-LDFLAGS += -lm
+DEPENDENCIES += $(BINDIR)/duktape.o
+CFLAGS += -fPIC
+LDFLAGS := -lm $(LDFLAGS)
 OUTNAME := lib$(OUTNAME).so
 else
 #Windows
@@ -22,8 +24,11 @@ OUTNAME := $(OUTNAME).dll
 endif
 
 $(OUTDIR)/$(OUTNAME): $(DEPENDENCIES)
-	gcc $(CFLAGS) -shared $^ $(INCLUDES) $(LDFLAGS) -o $@
+	gcc $(CFLAGS) -shared $^ $(INCLUDES) -o $@ $(LDFLAGS)
 	strip $@
 
+$(BINDIR)/duktape.o: ../../../../duktape/duktape.c
+	gcc $(CFLAGS) -c $< $(INCLUDES) -o $@
+	
 $(BINDIR)/%.o: $(SRCDIR)/%.c $(INCLUDEDIR)/main.h
 	gcc $(CFLAGS) -c $< $(INCLUDES) -o $@
