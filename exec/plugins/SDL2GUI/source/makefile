@@ -9,8 +9,7 @@ INCLUDES = -I$(INCLUDEDIR) -I../../../../duktape
 
 DEPENDENCIES = $(BINDIR)/main.o $(BINDIR)/native.o $(BINDIR)/eventloop.o
 
-UNAME := $(shell uname)
-ifneq ($(UNAME),)
+ifneq ($(OS),Windows_NT)
 #Unix specific
 DEPENDENCIES += $(BINDIR)/duktape.o
 CFLAGS += -fPIC

@@ -45,10 +45,12 @@ duk_ret_t gui_clear(duk_context *ctx) { //clear screen
 
 duk_ret_t gui_blit(duk_context *ctx) { //clear screen
 	SDL_LockMutex(rendering.lock);
-	char STRING_BLIT[8] = "\5\0\5B";
+	char STRING_BLIT[6 + sizeof(SDL_Rect)] = "\5\0\5B";
+	
+	SDL_Rect temp = {0, 0, FONT_WH,FONT_WH};
 	if(duk_get_top(ctx) >= 2) { //get x and y
-		*(STRING_BLIT+4) = duk_get_int(ctx, 0);
-		*(STRING_BLIT+5) = duk_get_int(ctx, 1);
+		temp.x = duk_get_int(ctx, 0) * FONT_WH;
+		temp.y = duk_get_int(ctx, 1) * FONT_WH;
 	} else {
 		SDL_UnlockMutex(rendering.lock);
 		duk_push_string(ctx, "SyntaxError: Both coordinates not given");
@@ -66,9 +68,10 @@ duk_ret_t gui_blit(duk_context *ctx) { //clear screen
 		c = duk_get_string_default(ctx, 3, " ")[0];
 	}
 	
-	*(STRING_BLIT+6) = colour;
-	*(STRING_BLIT+7) = c;
-	rendering.string = STRING_BLIT;
+	*(STRING_BLIT+4) = colour;
+	*(STRING_BLIT+5) = c;
+	memcpy(STRING_BLIT+6, &temp, sizeof(SDL_Rect));
+	rendering.string = STRING_BLIT; //this is fine, since it won't go out of scope until this func ends
 	rendering.eol = SDL_FALSE;
 	SDL_CondWait(rendering.ready, rendering.lock);
 	SDL_UnlockMutex(rendering.lock);

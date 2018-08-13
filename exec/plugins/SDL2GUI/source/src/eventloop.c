@@ -90,10 +90,7 @@ void eventLoop() {
 						rendering.cursor_pos.y = 0;
 						break;
 					case 'B':
-						{
-							SDL_Rect temprect = {rendering.string[4] * FONT_WH, rendering.string[5] * FONT_WH, FONT_WH,FONT_WH};
-							blitChar(rendering.string[7], rendering.string[6], &temprect);
-						}
+						blitChar(rendering.string[5], rendering.string[4], rendering.string+6);
 						break;
 				}
 			} else {
