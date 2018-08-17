@@ -41,16 +41,17 @@ duk_ret_t gui_clear(duk_context *ctx) { //clear screen
 	rendering.eol = SDL_FALSE;
 	SDL_CondWait(rendering.ready, rendering.lock);
 	SDL_UnlockMutex(rendering.lock);
+	return 0;
 }
 
-duk_ret_t gui_blit(duk_context *ctx) { //clear screen
+duk_ret_t gui_blit(duk_context *ctx) { //blit to screen
 	SDL_LockMutex(rendering.lock);
-	char STRING_BLIT[6 + sizeof(SDL_Rect)] = "\5\0\5B";
+	char STRING_BLIT[6 + (sizeof(short)*2)] = "\5\0\5B";
 	
-	SDL_Rect temp = {0, 0, FONT_WH,FONT_WH};
+	short x, y;
 	if(duk_get_top(ctx) >= 2) { //get x and y
-		temp.x = duk_get_int(ctx, 0) * FONT_WH;
-		temp.y = duk_get_int(ctx, 1) * FONT_WH;
+		x = duk_get_int(ctx, 0) * FONT_WH;
+		y = duk_get_int(ctx, 1) * FONT_WH;
 	} else {
 		SDL_UnlockMutex(rendering.lock);
 		duk_push_string(ctx, "SyntaxError: Both coordinates not given");
@@ -70,9 +71,43 @@ duk_ret_t gui_blit(duk_context *ctx) { //clear screen
 	
 	*(STRING_BLIT+4) = colour;
 	*(STRING_BLIT+5) = c;
-	memcpy(STRING_BLIT+6, &temp, sizeof(SDL_Rect));
+	*((short *)(STRING_BLIT+6)) = x;
+	*((short *)(STRING_BLIT+8)) = y;
 	rendering.string = STRING_BLIT; //this is fine, since it won't go out of scope until this func ends
 	rendering.eol = SDL_FALSE;
 	SDL_CondWait(rendering.ready, rendering.lock);
 	SDL_UnlockMutex(rendering.lock);
+	return 0;
+}
+
+duk_ret_t gui_getcursor(duk_context *ctx) {
+	
+	duk_idx_t cursor = duk_push_object(ctx);
+	
+	SDL_LockMutex(rendering.lock);
+	duk_push_int(ctx, rendering.cursor_pos.x / FONT_WH);
+	duk_put_prop_string(ctx, cursor, "x");
+		
+	duk_push_int(ctx, rendering.cursor_pos.y / FONT_WH);
+	duk_put_prop_string(ctx, cursor, "y");
+	SDL_UnlockMutex(rendering.lock);
+	
+	return 1;
+}
+
+duk_ret_t gui_setcursor(duk_context *ctx) {
+	SDL_LockMutex(rendering.lock);
+	
+	if(duk_get_top(ctx) >= 2) { //get x and y
+		rendering.cursor_pos.x = duk_get_int(ctx, 0) * FONT_WH;
+		rendering.cursor_pos.y = duk_get_int(ctx, 1) * FONT_WH;
+	} else {
+		SDL_UnlockMutex(rendering.lock);
+		duk_push_string(ctx, "SyntaxError: Both coordinates not given");
+		return duk_throw(ctx);
+	}
+	
+	SDL_UnlockMutex(rendering.lock);
+	
+	return 1;
 }

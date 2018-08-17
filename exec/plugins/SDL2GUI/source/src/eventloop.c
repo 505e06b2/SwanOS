@@ -89,8 +89,11 @@ void eventLoop() {
 						rendering.cursor_pos.x = 0;
 						rendering.cursor_pos.y = 0;
 						break;
-					case 'B':
-						blitChar(rendering.string[5], rendering.string[4], rendering.string+6);
+					case 'B': 
+						{
+							SDL_Rect temp = { *((short *)(rendering.string+6)) , *((short *)(rendering.string+8)), FONT_WH,FONT_WH};
+							blitChar(rendering.string[5], rendering.string[4], &temp);
+						}
 						break;
 				}
 			} else {

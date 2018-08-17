@@ -64,5 +64,7 @@ duk_ret_t alt_getline(duk_context *);
 
 duk_ret_t gui_clear(duk_context *);
 duk_ret_t gui_blit(duk_context *);
+duk_ret_t gui_getcursor(duk_context *);
+duk_ret_t gui_setcursor(duk_context *);
 
 #endif

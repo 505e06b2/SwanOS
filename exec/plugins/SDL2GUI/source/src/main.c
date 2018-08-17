@@ -178,13 +178,26 @@ EXPORT_FUNCTION void init(duk_context *ctx, const char *path) { //path to this d
 		duk_idx_t guiobj = duk_push_object(ctx);
 		puts(">> Added [obj] os.gui");
 		
-		duk_push_c_function(ctx, gui_clear, DUK_VARARGS);
-		duk_put_prop_string(ctx, guiobj, "clear");
-		puts(">> Added [func] os.gui.clear");
+			duk_push_c_function(ctx, gui_clear, DUK_VARARGS);
+			duk_put_prop_string(ctx, guiobj, "clear");
+			puts(">> Added [func] os.gui.clear");
 		
-		duk_push_c_function(ctx, gui_blit, DUK_VARARGS);
-		duk_put_prop_string(ctx, guiobj, "blit");
-		puts(">> Added [func] os.gui.blit");
+			duk_push_c_function(ctx, gui_blit, DUK_VARARGS);
+			duk_put_prop_string(ctx, guiobj, "blit");
+			puts(">> Added [func] os.gui.blit");
+		
+			duk_idx_t cursorobj = duk_push_object(ctx);
+			puts(">> Added [obj] os.gui.cursor");
+		
+				duk_push_c_function(ctx, gui_getcursor, DUK_VARARGS);
+				duk_put_prop_string(ctx, cursorobj, "get");
+				puts(">> Added [func] os.gui.cursor.get");
+				
+				duk_push_c_function(ctx, gui_setcursor, DUK_VARARGS);
+				duk_put_prop_string(ctx, cursorobj, "set");
+				puts(">> Added [func] os.gui.cursor.set");
+		
+			duk_put_prop_string(ctx, guiobj, "cursor");
 		
 		duk_put_prop_string(ctx, -2, "gui"); //guiobj is currently -1, "os" is -2
 		
