@@ -36,6 +36,13 @@ void eventLoop() {
 					input.close_request = SDL_TRUE;
 					SDL_CondSignal(input.ready); //make sure we don't block
                     break;
+				case SDL_WINDOWEVENT:
+					switch (e.window.event) {
+						case SDL_WINDOWEVENT_RESIZED:
+							renderFramebuffer();
+							break;
+					}
+					break;
                 case SDL_TEXTINPUT:
                     blitChar(e.text.text[0], rendering.colour, &rendering.cursor_pos);
 					rendering.cursor_pos.x += FONT_WH;

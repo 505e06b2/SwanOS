@@ -5,7 +5,6 @@ SDL_Renderer *renderer = NULL;
 SDL_Texture *buffer = NULL;
 SDL_Texture *font = NULL;
 
-
 void blitChar(const unsigned char c, const unsigned char colours, SDL_Rect *dest) {
 	if(c == '\n') {
 		dest->y += FONT_WH;
@@ -46,6 +45,10 @@ void blitChar(const unsigned char c, const unsigned char colours, SDL_Rect *dest
 		SDL_SetTextureColorMod(font, palette[fgcolour].r, palette[fgcolour].g, palette[fgcolour].b);
 		SDL_RenderCopy(renderer, font, &src, dest);
 	}
+	
+	short x = dest->x / FONT_WH;
+	short y = (dest->y / FONT_WH) * SCREEN_COLS;
+	rendering.framebuffer[x + y] = c + (colours << 8);
 }
 
 void blitString(const unsigned char *str, const unsigned char colours, SDL_Rect *dest) {
@@ -56,6 +59,7 @@ void blitString(const unsigned char *str, const unsigned char colours, SDL_Rect 
 }
 
 void renderClear(unsigned char colour) {
+	for(size_t i = 0, e = (SCREEN_COLS * SCREEN_ROWS); i < e; i++) rendering.framebuffer[i] = ' ' + (colour << 8);
 	colour = colour >> 4;
 	SDL_SetRenderDrawColor(renderer, palette[colour].r, palette[colour].g, palette[colour].b, 0xff);
 	SDL_RenderClear(renderer);
@@ -66,6 +70,38 @@ void renderFlip() {
 	SDL_RenderCopy(renderer, buffer, NULL, NULL); //stretch to window
 	SDL_RenderPresent(renderer); //vsync should keep this from being too quick, but I should implement an fps cap too
 	SDL_SetRenderTarget(renderer, buffer); //set renderer to texture
+}
+
+void renderFramebuffer() {
+	SDL_Rect dest = {0,0, FONT_WH,FONT_WH};
+	SDL_Rect src = {0,0, FONT_WH,FONT_WH};
+	unsigned char bgcolour;
+	unsigned char fgcolour;
+	unsigned char colour;
+	unsigned char c;
+	
+	for(size_t y = 0; y < SCREEN_ROWS; y++) {
+		for(size_t x = 0; x < SCREEN_COLS; x++) {
+			
+			c = rendering.framebuffer[x + (y * SCREEN_COLS)] & 0x00ff;
+			colour = rendering.framebuffer[x + (y * SCREEN_COLS)] >> 8;
+			bgcolour = colour >> 4;
+			fgcolour = colour & 0x0f;
+			
+			dest.x = x * FONT_WH;
+			dest.y = y * FONT_WH;
+			
+			src.x = (c % (16)) * FONT_WH;
+			src.y = (c / (16)) * FONT_WH;
+			
+			SDL_SetRenderDrawColor(renderer, palette[bgcolour].r, palette[bgcolour].g, palette[bgcolour].b, 0xff);
+			SDL_RenderFillRect(renderer, &dest);
+			
+			SDL_SetTextureColorMod(font, palette[fgcolour].r, palette[fgcolour].g, palette[fgcolour].b);
+			SDL_RenderCopy(renderer, font, &src, &dest);
+	
+		}
+	}
 }
 
 void threadQuit() {
@@ -104,7 +140,7 @@ int threadStart(void *arg) {
 		
 	
 		if(!( //if not everything initialised, return -1
-			(window = SDL_CreateWindow("SDL2GUI", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH*2, SCREEN_HEIGHT*2, SDL_WINDOW_SHOWN)) && //increase window size by 2, so it's not so small...
+			(window = SDL_CreateWindow("SDL2GUI", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH*2, SCREEN_HEIGHT*2, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE)) && //increase window size by 2, so it's not so small...
 			(renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE)) &&
 			(buffer = SDL_CreateTexture(renderer, PIXEL_FORMAT, SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT)) &&
 			(tempfont = SDL_LoadBMP(charsetpath)) && //load font

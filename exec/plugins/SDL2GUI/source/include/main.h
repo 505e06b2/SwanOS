@@ -37,6 +37,7 @@ typedef struct rendermutex {
 	const char *string;
 	unsigned char colour;
 	SDL_Rect cursor_pos;
+	unsigned short framebuffer[SCREEN_COLS * SCREEN_ROWS];
 } rendermutex;
 
 typedef struct Colour { //I'd use the SDL one, but it has RGBA and I don't need alpha
@@ -54,6 +55,7 @@ void blitChar(const unsigned char, const unsigned char, SDL_Rect *);
 void blitString(const unsigned char *, const unsigned char, SDL_Rect *);
 void renderFlip();
 void renderClear(unsigned char);
+void renderFramebuffer();
 
 //eventloop.c
 void eventLoop();
