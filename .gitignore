@@ -1,6 +1,5 @@
 *.bat
 *.dll
 *.exe
-*.a
 os/*
 macros/*
